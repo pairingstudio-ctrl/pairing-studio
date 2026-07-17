@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>페어링 스튜디오 아이스브레이킹</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #f0f0f0; }
+    .wrap { display: flex; flex-direction: column; height: 100vh; background: #fff; }
+
+    .topbar {
+      display: flex; align-items: center;
+      padding: 14px 28px 12px;
+      border-bottom: 0.5px solid rgba(0,0,0,0.09);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0; gap: 0; z-index: 30; position: relative;
+    }
+    .logo-block { flex: 0 0 auto; display: flex; flex-direction: column; gap: 2px; min-width: 150px; }
+    .logo-main  { font-size: 13px; font-weight: 700; color: #111; letter-spacing: -0.3px; line-height: 1.2; }
+    .logo-sub   { font-size: 11px; font-weight: 400; color: #aaa; letter-spacing: -0.1px; }
+    .tab-group  { flex: 1; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .right-bar  { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; min-width: 150px; justify-content: flex-end; }
+
+    .tab-pill {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 15px; border-radius: 12px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      background: #f6f6f6; color: #888;
+      transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
+      font-family: 'Pretendard', sans-serif; white-space: nowrap;
+      letter-spacing: -0.2px; user-select: none;
+    }
+    .tab-pill .dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; transition: opacity .18s; }
+    .dot-kw   { background: #90b8d8; opacity: 0.45; }
+    .dot-good { background: #88c888; opacity: 0.45; }
+    .dot-pair { display: flex; gap: 3px; flex-shrink: 0; }
+    .dot-pair .dot { opacity: 0.45; }
+    .dot-pairing { background: #c9a0dc; opacity: 0.45; }
+    .dot-ox      { background: #e0a860; opacity: 0.45; }
+    .tab-pill.on { background: #111; border-color: #111; color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.20); }
+    .tab-pill.on .dot, .tab-pill.on .dot-pair .dot { opacity: 1; }
+    .tab-pill:hover:not(.on) { background: #ededed; border-color: rgba(0,0,0,0.18); color: #333; }
+    .tab-pill:hover:not(.on) .dot,
+    .tab-pill:hover:not(.on) .dot-pair .dot { opacity: 0.72; }
+
+    .btn-base {
+      font-size: 12px; font-weight: 500;
+      background: #f6f6f6; border: 0.5px solid rgba(0,0,0,0.12);
+      border-radius: 12px; padding: 8px 15px; cursor: pointer;
+      font-family: 'Pretendard', sans-serif;
+      transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
+      white-space: nowrap; letter-spacing: -0.2px; user-select: none;
+    }
+    .end-btn   { color: #555; }
+    .end-btn:hover   { background: #ededed; border-color: rgba(0,0,0,0.22); color: #222; }
+    .finish-btn { color: #b05555; }
+    .finish-btn:hover { background: #b05555; border-color: #b05555; color: #fff; box-shadow: 0 2px 10px rgba(176,85,85,0.25); }
+    .reset-btn { color: #666; }
+    .reset-btn:hover { background: #111; border-color: #111; color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.20); }
+    .back-btn  { color: #888; }
+    .back-btn:hover  { background: #ededed; border-color: rgba(0,0,0,0.22); color: #333; }
+
+    .upload-panel {
+      flex: 1; padding: 44px 56px; display: flex; flex-direction: column;
+      gap: 18px; justify-content: center; max-width: 580px; margin: 0 auto; width: 100%;
+    }
+    .upload-box {
+      border: 0.5px dashed rgba(0,0,0,0.18); border-radius: 24px; padding: 40px;
+      text-align: center; cursor: pointer; background: #f9f9f9; transition: all .2s;
+    }
+    .upload-box:hover { border-color: rgba(0,0,0,0.40); background: #f3f3f3; }
+    .upload-icon { font-size: 28px; margin-bottom: 12px; opacity: 0.65; }
+    .upload-box p { font-size: 14px; color: #333; margin-bottom: 5px; font-weight: 500; letter-spacing: -0.2px; }
+    .upload-box small { font-size: 11.5px; color: #aaa; }
+    .go-btn {
+      padding: 10px 24px; background: #111; color: #fff; border: none;
+      border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Pretendard', sans-serif;
+      transition: background .18s, box-shadow .18s;
+      letter-spacing: -0.2px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+    }
+    .go-btn:hover { background: #333; }
+    .info-txt { font-size: 11.5px; color: #bbb; text-align: center; padding: 4px 0; font-weight: 400; }
+    .warn-txt { font-size: 11.5px; color: #e8a000; text-align: center; padding: 4px 0; font-weight: 400; }
+
+    .stage-outer { flex: 1; position: relative; overflow: hidden; display: none; }
+    .bubble-canvas { position: absolute; inset: 0; }
+    .bsvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; cursor: default; }
+    .bottom-hint {
+      position: absolute; bottom: 18px; left: 0; right: 0; text-align: center;
+      font-size: 12px; color: #ccc; font-weight: 400; letter-spacing: 0.03em;
+      pointer-events: none; transition: opacity .3s;
+    }
+    .bottom-hint.hidden { opacity: 0; }
+
+    .popup-dim {
+      position: absolute; inset: 0; z-index: 19;
+      background: rgba(0,0,0,0); pointer-events: none;
+      transition: background .30s ease;
+    }
+    .popup-dim.show { background: rgba(0,0,0,0.30); pointer-events: auto; }
+    .popup-overlay {
+      position: absolute; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .popup-box {
+      pointer-events: auto;
+      width: 52%; min-width: 380px; max-width: 640px;
+      background: #ffffff;
+      border: 0.5px solid rgba(0,0,0,0.08);
+      border-radius: 24px; padding: 44px 48px 36px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.10);
+      cursor: pointer;
+      transform: scale(0.82); opacity: 0;
+      transition: transform .34s cubic-bezier(.34,1.48,.64,1), opacity .24s ease;
+      user-select: none;
+    }
+    .popup-box.show { transform: scale(1); opacity: 1; }
+    .popup-box.hide {
+      transform: scale(0.82); opacity: 0;
+      transition: transform .22s cubic-bezier(.4,0,.2,1), opacity .18s ease;
+    }
+    .popup-type {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; font-weight: 500; color: #bbb;
+      letter-spacing: 0.10em; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .popup-type-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .popup-badge {
+      display: inline-block; margin-left: 8px; padding: 2px 9px;
+      font-size: 10.5px; font-weight: 600; color: #a06a1a;
+      background: #fdf2dd; border-radius: 100px; letter-spacing: 0;
+    }
+    .popup-who {
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 700; color: #111;
+      letter-spacing: -0.8px; line-height: 1.15; margin-bottom: 14px;
+    }
+    .popup-text {
+      font-size: clamp(19px, 2.2vw, 30px);
+      font-weight: 400; color: #333;
+      line-height: 1.5; letter-spacing: -0.3px; word-break: keep-all;
+    }
+    .popup-progress {
+      margin-top: 26px; padding-top: 18px;
+      border-top: 0.5px solid #f2f2f2;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .popup-progress-txt { font-size: 11px; color: #ccc; letter-spacing: 0.02em; }
+    .popup-timer {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: #bbb; font-weight: 500;
+    }
+    .timer-ring { width: 14px; height: 14px; }
+    .timer-ring circle { fill: none; stroke-width: 2.5; }
+    .timer-ring .bg { stroke: #eee; }
+    .timer-ring .fg { stroke: #90b8d8; transition: stroke-dashoffset .1s linear; }
+
+    .ending-screen {
+      position: absolute; inset: 0; z-index: 50;
+      background: #fff; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 48px 40px;
+      opacity: 0; pointer-events: none; transition: opacity .7s ease;
+    }
+    .ending-screen.show { opacity: 1; pointer-events: auto; }
+    .ending-top {
+      position: absolute; top: 28px; left: 0; right: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .ending-brand     { font-size: 13px; font-weight: 600; color: #bbb; letter-spacing: -0.3px; }
+    .ending-stats-top { font-size: 11.5px; font-weight: 400; color: #ddd; letter-spacing: -0.1px; }
+    .ending-main {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 20px; text-align: center; max-width: 760px;
+    }
+    .ending-emoji { font-size: clamp(44px, 5.5vw, 70px); line-height: 1; }
+    .ending-date  { font-size: clamp(18px, 2vw, 28px); font-weight: 400; color: #aaa; letter-spacing: -0.3px; }
+    .ending-title { font-size: clamp(34px, 5vw, 60px); font-weight: 700; color: #111; letter-spacing: -1.4px; line-height: 1.15; white-space: nowrap; }
+    .ending-sub   { font-size: clamp(20px, 2.4vw, 34px); font-weight: 400; color: #888; letter-spacing: -0.4px; }
+    .ending-btn-row { margin-top: 36px; display: flex; gap: 10px; }
+    .ending-back {
+      font-size: 12px; font-weight: 500; color: #bbb;
+      background: none; border: 0.5px solid #e0e0e0;
+      border-radius: 12px; padding: 9px 22px; cursor: pointer;
+      font-family: 'Pretendard', sans-serif; transition: all .18s;
+    }
+    .ending-back:hover { color: #555; border-color: #bbb; }
+    .ending-back.primary { background: #111; color: #fff; border-color: #111; }
+    .ending-back.primary:hover { background: #333; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo-block">
+      <div class="logo-main" id="logoMain">파일을 업로드해 주세요</div>
+      <div class="logo-sub"  id="logoSub">페어링 스튜디오</div>
+    </div>
+    <div class="tab-group" id="tabGroup">
+      <button class="tab-pill on" data-tab="both" onclick="switchTab('both',this)">
+        <span class="dot-pair"><span class="dot dot-kw"></span><span class="dot dot-good"></span></span>키워드 + 좋은 일
+      </button>
+      <button class="tab-pill" data-tab="keyword" onclick="switchTab('keyword',this)">
+        <span class="dot dot-kw"></span>키워드
+      </button>
+      <button class="tab-pill" data-tab="good" onclick="switchTab('good',this)">
+        <span class="dot dot-good"></span>최근 좋은 일
+      </button>
+      <button class="tab-pill" data-tab="pairing" onclick="switchTab('pairing',this)">
+        <span class="dot dot-pairing"></span>페어링 질문
+      </button>
+      <button class="tab-pill" data-tab="ox" onclick="switchTab('ox',this)">
+        <span class="dot dot-ox"></span>OX 질문
+      </button>
+    </div>
+    <div class="right-bar">
+      <button class="btn-base end-btn"    id="endBtn"    style="display:none" onclick="startEnding()">🥂 파티 시작</button>
+      <button class="btn-base finish-btn" id="finishBtn" style="display:none" onclick="finishParty()">🍷 파티 종료</button>
+      <button class="btn-base reset-btn"  id="resetBtn"                       onclick="resetAll()">↺ 초기화</button>
+      <button class="btn-base back-btn"   id="backBtn"   style="display:none" onclick="goBack()">📂 파일 변경</button>
+    </div>
+  </div>
+
+  <div id="uploadPanel" class="upload-panel">
+    <div class="upload-box" onclick="document.getElementById('xlFile').click()">
+      <div class="upload-icon">📂</div>
+      <p>참가자 관리 파일을 업로드해 주세요</p>
+      <small>.xlsx 파일 · 확정 리스트의 참가자를 자동으로 인식합니다</small>
+      <input type="file" id="xlFile" accept=".xlsx,.xls" style="display:none" onchange="loadExcel(this)">
+    </div>
+    <div id="infoTxt" class="info-txt">파일을 업로드하면 확정한 참가자가 자동으로 인식됩니다</div>
+    <div id="warnTxt" class="warn-txt" style="display:none"></div>
+    <div id="goBtnWrap" style="display:none;text-align:center">
+      <button class="go-btn" onclick="startParty()">아이스 브레이킹 시작 →</button>
+    </div>
+  </div>
+
+  <div id="stageOuter" class="stage-outer">
+    <div class="bubble-canvas" id="bubbleCanvas">
+      <svg class="bsvg" id="bsvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="popup-dim" id="popupDim" onclick="closePopup()"></div>
+      <div class="popup-overlay">
+        <div class="popup-box" id="popupBox" onclick="closePopup()">
+          <div class="popup-type">
+            <span class="popup-type-dot" id="popupTypeDot"></span>
+            <span id="popupTypeLabel"></span>
+            <span class="popup-badge" id="popupBadge" style="display:none"></span>
+          </div>
+          <div class="popup-who"  id="popupWho"></div>
+          <div class="popup-text" id="popupText"></div>
+          <div class="popup-progress">
+            <span class="popup-progress-txt" id="popupProgress"></span>
+            <span class="popup-timer" id="popupTimer">
+              <svg class="timer-ring" viewBox="0 0 20 20">
+                <circle class="bg" cx="10" cy="10" r="8"></circle>
+                <circle class="fg" id="timerFg" cx="10" cy="10" r="8"
+                        stroke-dasharray="50.27" stroke-dashoffset="0"
+                        transform="rotate(-90 10 10)"></circle>
+              </svg>
+              <span id="timerNum">10</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="ending-screen" id="endingScreen">
+        <div class="ending-top">
+          <div class="ending-brand">오늘의 페어링 스튜디오</div>
+          <div class="ending-stats-top" id="endingStats"></div>
+        </div>
+        <div class="ending-main">
+          <div class="ending-emoji" id="endingEmoji">🥂</div>
+          <div class="ending-date"  id="endingDate"></div>
+          <div class="ending-title" id="endingTitle">페어링 스튜디오 파티 시작!</div>
+          <div class="ending-sub"   id="endingSub">지금부터 자유롭게 대화해요!</div>
+        </div>
+        <div class="ending-btn-row" id="endingBtnRow"></div>
+      </div>
+      <div class="bottom-hint" id="bottomHint">버블이 자동으로 톡— 하고 터집니다</div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════
+   질문 데이터 (엑셀에서 추출)
+   각 항목: [질문] 또는 [질문, 1] — 1이면 PICK(액기스/양대건)
+═══════════════════════════════════════════════════════ */
+var PAIRING_Q=[['나를 색깔로 표현한다면? 이유는?'],['요즘 집에 있을 때 가장 많이 하는 것은?'],['살면서 가장 행복했던 순간은?'],['나의 롤모델 혹은 좌우명은?'],['나의 별명과 그 이유는?'],['나에게 소중한 3가지는?'],['나를 동물에 비유한다면?'],['스트레스를 받으면 주로 어떻게 푸나요?'],['술자리에서 나는 어떤 스타일인가요?'],['SNS를 얼마나 자주, 어떻게 사용하나요?'],['요즘 가장 큰 고민은?'],['요즘 가장 즐겨먹는 음식은?'],['살면서 가장 힘들었던 시절은?'],['가장 좋아하는 계절과 이유는?'],['나를 한 문장으로 소개한다면?'],['주변 사람들이 나를 어떤 사람이라고 표현하나요?'],['지금 이 순간 가장 하고 싶은 것은?'],['나만의 특이한 습관이나 버릇이 있다면?'],['나는 어떤 상황에서 가장 빛나는 것 같나요?'],['요즘 꽂혀 있는 것이 있다면? (음악, 유튜브, 취미 등)',1],['오늘 여기 오기 전에 누구한테 이야기했나요? 뭐라고 했나요?'],['로또 1등(20억)에 당첨된다면 어떻게 쓸 것인가?'],['더치페이 vs 한 명이 내기, 어떻게 생각하나요?'],['월급이 생기면 가장 먼저 하는 것은?',1],['이성을 볼 때 가장 중요하게 보는 부분은?',1],['연애에서 절대 하지 말아야 한다고 생각하는 것은?',1],['내 기분이 안 좋을 때 연인이 해줬으면 하는 것은?',1],['연인에게 자주 듣고 싶은 말 vs 해주고 싶은 말은?'],['동거에 대한 나의 생각은?'],['연애할 때 나는 더 좋아하는 사람인가요, 덜 좋아하는 사람인가요?',1],['전 연인과 지금도 연락하나요? 어떻게 생각하나요?'],['연락은 하루에 얼마나 자주 해야 한다고 생각하나요?',1],['첫눈에 반한 경험이 있나요?',1],['이런 이성은 싫다 — 나만의 절대 비호감 유형은?',1],['연인에게 해주고 싶은 가장 자신 있는 요리는?',1],['연인과 해보고 싶은 커플 아이템이나 활동은?'],['연애할 때 가장 설렜던 순간은?'],['지금까지 연애하면서 가장 잘했다고 생각하는 것은?'],['이상적인 데이트 코스를 짜준다면?'],['연인과 싸웠을 때 가장 먼저 하는 행동은?',1],['연인이 나를 위해 해줬으면 하는 깜짝 이벤트가 있다면?'],['사랑한다는 걸 어떻게 표현하는 편인가요?'],['잔다고 했던 연인이 몰래 나간 걸 알게 된다면?'],['연인이 나의 절친을 너무 싫어해서 만나지 말라고 한다면?'],['점집에서 연인과 만나면 안 되는 운명이라고 한다면?'],['친한 이성 친구가 있다 vs 없다? 어떻게 생각하나요?',1],['돈 많은 사람 vs 나를 많이 사랑하는 사람, 선택한다면?',1],['결혼은 꼭 해야 한다고 생각하나요?'],['삶에서 일과 사랑 중 더 중요한 것은?',1],['화가 많이 났을 때 그 자리에서 말하는 편인가요, 혼자 삭히는 편인가요?'],['연인이 어느 날 대머리가 된다면?'],['나의 꿈은? 그리고 그 꿈을 위해 지금 하고 있는 것은?'],['이런 사람이 되고 싶다 — 나의 이상적인 미래 모습은?'],['싫어하는 사람 유형은?'],['가장 듣기 좋아하는 말은?'],['나의 모습 중 자녀가 닮았으면 하는 부분과 이유는?'],['요즘 나의 가장 큰 관심사는?'],['나의 올해 목표는? 지금까지 얼마나 이뤘나요?'],['지금까지 살면서 가장 잘한 선택은?'],['나에게 용기가 필요했던 순간은?'],['내가 절대 타협하지 않는 가치관이 있다면?',1],['지금 내 삶에서 가장 바꾸고 싶은 것이 있다면?'],['인생에서 가장 중요한 것 세 가지를 순서대로 꼽는다면?'],['살면서 생각이 가장 많이 바뀐 것은?'],['내가 옳다고 믿었는데 나중에 틀렸다고 느낀 적이 있나요?'],['나는 어떤 순간에 진짜 행복하다고 느끼나요?'],['지금까지 받은 것 중 가장 기억에 남는 선물은? 왜?'],['나에게 가장 큰 영향을 준 사람은 누구이고 왜?'],['올해 꼭 달성하고 싶은 버킷리스트는?',1],['일주일 휴가가 생긴다면 당장 가고 싶은 곳은? 이유는?'],['돌아가고 싶은 순간이 있다면 언제, 왜?'],['5년 후 나는 어디서 무엇을 하고 있을 것 같나요?'],['버킷리스트 중 꼭 같이 하고 싶은 것이 있다면?'],['지금까지 가본 곳 중 가장 좋았던 여행지는? 이유는?'],['인생에서 꼭 한 번은 해보고 싶은 경험은?'],['10년 뒤 어떤 사람과 함께 있고 싶나요?'],['만약 지금 하는 일을 그만둔다면 무엇을 하고 싶나요?',1],['가장 친한 친구와 그 친구가 좋은 이유는?',1],['친구가 많은 편인가요, 적지만 깊은 편인가요?'],['가족과 사이가 좋은 편인가요?'],['연인이 생기면 제일 먼저 소개해주고 싶은 사람은?',1],['처음 만난 사람과 친해지는 데 얼마나 걸리는 편인가요?'],['누군가에게 서운할 때 직접 말하는 편인가요, 혼자 삭히는 편인가요?'],['내 인생에 꼭 필요한 사람의 조건은?'],['나를 오래 알고 지낸 친구들이 나에 대해 틀렸다고 생각하는 것이 있다면?'],['아무도 보지 않는다면 지금 당장 하고 싶은 것은?'],['나를 가장 잘 아는 사람은 누구이고, 그 사람은 나를 어떻게 표현하나요?'],['처음 만나는 사람에게 절대 들키고 싶지 않은 나의 모습은?'],['기분이 좋을 때와 나쁠 때 가장 달라지는 나의 모습은?'],['나의 첫인상과 실제 모습 중 가장 다른 점은?',1],['지금의 나를 만든 경험 하나를 꼽는다면?'],['20살의 나에게 해주고 싶은 말은?'],['실패했지만 지금 생각하면 잘됐다고 느끼는 경험이 있나요?'],['지금 가장 열심히 하고 있는 것은? 그 이유는?'],['나의 전 연인이 나를 한 마디로 표현한다면 뭐라고 할 것 같나요?',1],['나를 음식으로 표현한다면?'],['오늘 이 자리에 오면서 가장 기대했던 것은?'],['오늘 파티가 끝나고 가장 하고 싶은 것은?'],['나를 주인공으로 영화를 만든다면 어떤 장르일 것 같나요?'],['오늘 이 자리에서 나에 대해 꼭 알아줬으면 하는 것이 있다면?']];
+var OX_Q=[['나는 약속 시간보다 항상 먼저 나와 있는 편이다'],['나는 길을 잘 찾는 편이다'],['나는 혼밥, 혼술, 혼영이 전혀 어렵지 않다'],['나는 아침형 인간이다'],['나는 계획 없이 즉흥적으로 움직이는 것을 좋아한다'],['오늘 최대한 꾸미고 나왔다'],['나는 드라마나 영화를 볼 때 결말을 미리 찾아보는 편이다'],['나는 카카오톡 읽씹을 자주 하는 편이다'],['나는 밥을 먹을 때 음식 사진을 꼭 찍는 편이다'],['나는 길에서 아는 사람을 만치면 먼저 인사하는 편이다'],['나는 누군가 나에게 거짓말을 하면 바로 눈치채는 편이다'],['나는 기분이 얼굴에 다 드러나는 편이다'],['나는 화가 나도 목소리가 커지지 않는 편이다'],['나는 누군가 나에 대한 험담을 하면 참지 못하는 편이다'],['나는 노래방에서 마이크를 절대 놓지 않는 편이다'],['나는 한 번 꽂히면 며칠이고 같은 노래만 반복해서 듣는다'],['나는 청소를 자주 하는 편이다'],['나는 결정을 내릴 때 오래 고민하는 편이다'],['나는 엘리베이터에서 모르는 사람과 눈이 마주치면 먼저 웃는 편이다'],['나는 음식을 먹을 때 편식이 심한 편이다'],['나는 잠이 많은 편이다'],['나는 운동을 규칙적으로 하는 편이다'],['나는 누군가 내 험담을 한다는 걸 알아도 모른 척할 수 있다'],['나는 상대방 말을 끝까지 다 듣는 편이다'],['나는 선물을 받는 것보다 주는 게 더 좋다'],['나는 영화관에서 팝콘을 꼭 먹어야 한다'],['나는 술자리에서 분위기를 띄우는 역할을 주로 한다'],['나는 모르는 번호로 전화가 오면 잘 받지 않는다'],['나는 지각을 거의 하지 않는 편이다'],['나는 내 방이 항상 정리되어 있는 편이다'],['나는 갖고 싶은 게 생기면 바로 사는 편이다'],['나는 영수증을 챙기거나 가계부를 쓰는 편이다'],['나는 비싼 걸 하나 사는 것보다 저렴한 걸 여러 개 사는 게 좋다'],['나는 같은 물건이라면 브랜드보다 가격을 먼저 본다'],['나는 친구에게 돈을 빌려줄 수 있다'],['나는 맛있는 음식이라면 가격이 비싸도 아깝지 않다'],['나는 투자(주식, 코인 등)를 하고 있거나 관심이 있다'],['나는 쿠폰이나 할인 혜택을 꼼꼼하게 챙기는 편이다'],['나는 내 집 마련이 인생의 중요한 목표 중 하나다'],['나는 지금 당장 회사를 그만둬도 3개월은 버틸 수 있다'],['나는 데이트 비용을 남자가 더 많이 내는 게 자연스럽다고 생각한다'],['나는 연애할 때 더 잘해주는 편이다',1],['나는 연인의 휴대폰을 볼 수 있다면 보고 싶다',1],['나는 연인과 싸우면 그 자리에서 바로 해결하려는 편이다'],['나는 연인과 하루에 한 번은 꼭 통화해야 한다'],['나는 연인이 이성 친구와 단둘이 밥 먹는 것이 불편하다',1],['나는 기념일을 꼭 챙겨야 한다고 생각한다'],['나는 연애할 때 친구보다 연인을 더 자주 만나는 편이다'],['나는 연인이 내 SNS에 좋아요를 안 눌러도 전혀 신경 쓰이지 않는다'],['나는 연인과 취미가 달라도 괜찮다'],['나는 연인이 나보다 돈을 많이 벌면 부담스럽다',1],['나는 연애할 때 내가 좋아하는 게 더 편하다'],['나는 첫 만남에서 이미 연애 가능 여부가 느껴진다',1],['나는 연인이 생기면 주변에 빠르게 알리는 편이다'],['나는 술 마시면 평소보다 연락을 더 많이 하는 편이다'],['나는 연인의 과거 연애 횟수가 신경 쓰이는 편이다'],['나는 연인이 술자리에서 늦게 들어와도 크게 뭐라 하지 않는다'],['나는 연인이 내 생일을 깜빡하면 크게 상처받는 편이다'],['나는 연애할 때 내가 먼저 연락하는 편이다'],['나는 연인과 여행을 가면 모든 일정을 내가 짜고 싶다'],['나는 연인이 나보다 친구를 더 좋아하는 것 같으면 질투가 난다',1],['나는 사귀기 전 썸 기간이 길수록 좋다'],['나는 연인에게 내 모든 일상을 공유하고 싶은 편이다'],['나는 연인이 내 친구들에게 잘 보이는 게 중요하다'],['나는 헤어진 연인과 다시 만난 경험이 있다'],['나는 연인이 나보다 나를 더 좋아해줬으면 한다',1],['나는 연인이 나 몰래 일기나 다이어리를 써도 절대 보지 않을 수 있다'],['나는 연애보다 결혼이 더 어렵다고 생각한다'],['나는 짝사랑을 3개월 이상 해본 적이 있다'],['나는 연인이 다이어트한다고 하면 같이 해주는 편이다'],['나는 연인이 내 취미를 싫어해도 계속할 수 있다'],['나는 연인의 카카오톡 프로필 사진에 내가 없으면 서운하다'],['나는 연애 초반 설레는 감정이 사라지면 권태기가 온다고 생각한다'],['나는 연인과 싸운 날도 잘 자는 편이다'],['나는 연인이 내 과거에 대해 많이 알수록 좋다',1],['나는 지금 당장 누군가를 좋아할 준비가 되어 있다'],['나는 나한테 잘해주는 사람보다 무관심한 사람에게 끌린 경험이 있다'],['나는 결혼 전에 같이 살아봐야 한다고 생각한다'],['나는 결혼하면 맞벌이를 해야 한다고 생각한다'],['나는 점술, 사주, MBTI를 어느 정도 믿는 편이다',1],['나는 나쁜 사람인 걸 알면서도 계속 만난 경험이 있다'],['나는 살면서 한 번쯤 해외에서 살아보고 싶다'],['나는 지금 이 순간이 내 인생에서 꽤 잘 흘러가고 있다고 생각한다'],['나는 친구보다 가족이 더 편하다'],['나는 칭찬보다 진심 어린 조언이 더 고마운 편이다'],['나는 내가 틀렸을 때 먼저 사과하는 편이다'],['나는 10년 후의 내 모습이 대략 그려진다'],['나는 지금 하는 일이 나와 잘 맞는다고 생각한다'],['나는 나 자신이 꽤 매력적인 사람이라고 생각한다',1],['나는 행복하기 위해 돈이 꼭 필요하다고 생각한다'],['나는 나쁜 기억보다 좋은 기억이 더 잘 떠오르는 편이다'],['나는 노력하면 뭐든 될 수 있다고 믿는 편이다'],['나는 오늘 이 자리에 오기 전에 거울을 3번 이상 봤다'],['나는 오늘 이 자리에서 내 번호를 줄 용의가 있다'],['나는 오늘 집에 가기 싫다'],['나는 지금 이 자리에서 내 진짜 모습을 보여주고 있다'],['나는 오늘 이 자리가 내 인생에서 기억에 남을 것 같다'],['나는 오늘 여기서 만난 사람 중 다시 보고 싶은 사람이 생겼다',1]];
+
+/* ── 전역 상태 ── */
+var DAYS_KR = ['일','월','화','수','목','금','토'];
+var WRAP_PAD = 180;
+var tab = 'both';
+var participants = [];       // 확정 참가자
+var currentItems = [];       // 현재 탭에 표시할 아이템 배열
+var bubbles = [];
+var animId = null;
+var W = 800, H = 560;
+var activePopupBubble = null;
+var popupLocked = false;
+var revealedCount = 0;
+var currentDateLabel = '';
+var partyStarted = false;    // 파티 시작(자동재생 모드) 여부
+
+/* 자동 재생 상태 */
+var autoMode = false;        // 자동으로 버블이 터지는 모드
+var autoTimer = null;        // 다음 버블 예약 타이머
+var popupTimer = null;       // 팝업 표시 시간 타이머
+var playQueue = [];          // 이번 바퀴에 아직 안 터진 아이템 인덱스
+var POPUP_DURATION = 10000;  // 팝업 표시 10초
+var PICK_WEIGHT = 3;         // PICK 항목 큐 가중치(빈도)
+
+/* ── 파일명에서 날짜·회차 추출 ── */
+function parseDateFromFilename(filename) {
+  var parts = [];
+  var rnd = filename.match(/(\d+)회/);
+  var dm  = filename.match(/(\d{4})_(\d{2})_(\d{2})/);
+  if (dm) {
+    var y = parseInt(dm[1]), mo = parseInt(dm[2]), d = parseInt(dm[3]);
+    var dayIdx = new Date(y, mo-1, d).getDay();
+    parts.push(mo + '/' + d + '(' + DAYS_KR[dayIdx] + ')');
+  }
+  if (rnd) parts.push(rnd[1] + '회차 파티');
+  return parts.join(' · ');
+}
+
+/* ── 시트 내 확정 참가자 수 계산 ── */
+function countConfirmed(rows) {
+  var hdrIdx = -1, cConf = -1, cName = -1, cNum = -1, cGender = -1;
+  for (var hi = 0; hi < Math.min(rows.length, 10); hi++) {
+    var r = rows[hi];
+    var hasName = false, hasNum = false, hasConf = false;
+    for (var ci = 0; ci < r.length; ci++) {
+      var h = String(r[ci] || '').trim();
+      if (h === '이름')          { hasName = true; cName = ci; }
+      if (h === '번호')          { hasNum  = true; cNum  = ci; }
+      if (h === '확정 문자발송') { hasConf = true; cConf = ci; }
+      if (h === '성별') cGender = ci;
+    }
+    if (hasName && hasNum && hasConf) { hdrIdx = hi; break; }
+  }
+  if (hdrIdx < 0) return 0;
+  var count = 0;
+  for (var i = hdrIdx + 1; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row || !row.length) continue;
+    var name = String(row[cName] || '').trim();
+    var gender = cGender >= 0 ? String(row[cGender] || '').trim() : '';
+    /* 확정 리스트는 V 없이 명단 자체가 확정이므로,
+       이름+성별이 유효하면 카운트 (V 있으면 V도 인정) */
+    if (name && (gender === '남' || gender === '여')) count++;
+  }
+  return count;
+}
+
+/* ── 엑셀 로딩 ── */
+function loadExcel(input) {
+  var file = input.files[0];
+  if (!file) return;
+  document.getElementById('infoTxt').textContent = '파일 읽는 중...';
+  document.getElementById('warnTxt').style.display = 'none';
+  document.getElementById('goBtnWrap').style.display = 'none';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:'binary', cellFormula:false, raw:true});
+      /* '확정 리스트'가 최종 명단 → 확정자 수가 가장 많은 시트 자동 선택 */
+      var bestRows = null, bestCount = -1;
+      wb.SheetNames.forEach(function(sn) {
+        var r = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1, defval:'', raw:true});
+        var cnt = countConfirmed(r);
+        if (cnt > bestCount) { bestCount = cnt; bestRows = r; }
+      });
+      if (!bestRows || bestCount <= 0) {
+        document.getElementById('infoTxt').textContent = '확정한 참가자를 찾을 수 없습니다.';
+        return;
+      }
+      parseRows(bestRows, file.name);
+    } catch(err) {
+      document.getElementById('infoTxt').textContent = '파일 읽기 오류: ' + err.message;
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+/* ── 참가자 파싱 ── */
+function parseRows(rows, filename) {
+  var hdrIdx = -1;
+  var cConf = -1, cName = -1, cNum = -1, cGender = -1, cKw = -1, cGood = -1;
+  for (var hi = 0; hi < Math.min(rows.length, 10); hi++) {
+    var r = rows[hi];
+    var hasName = false, hasNum = false, hasConf = false;
+    for (var ci = 0; ci < r.length; ci++) {
+      var h = String(r[ci] || '').trim();
+      if (h === '이름')          { hasName = true; cName = ci; }
+      if (h === '번호')          { hasNum  = true; cNum  = ci; }
+      if (h === '확정 문자발송') { hasConf = true; cConf = ci; }
+      if (h === '성별')          cGender = ci;
+      if (h === '키워드')        cKw     = ci;
+      if (h === '좋은일')        cGood   = ci;
+    }
+    if (hasName && hasNum && hasConf) { hdrIdx = hi; break; }
+  }
+  if (hdrIdx < 0) {
+    document.getElementById('infoTxt').textContent =
+      '헤더를 찾을 수 없습니다. 파일 형식을 확인해 주세요.';
+    return;
+  }
+
+  function extractGender(v) {
+    var s = String(v || '').trim();
+    if (s === '남' || s === '남성') return '남';
+    if (s === '여' || s === '여성') return '여';
+    var m = s.match(/,\s*"([남여])"\s*\)/);
+    if (m) return m[1];
+    return '';
+  }
+  function extractVal(v) {
+    var s = String(v || '').trim();
+    if (!s || s.charAt(0) === '=') return '';
+    return s;
+  }
+
+  var data = [];
+  for (var i = hdrIdx + 1; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row || !row.length) continue;
+    var name   = extractVal(row[cName]);
+    var gender = cGender >= 0 ? extractGender(row[cGender]) : '';
+    if (!name || !gender) continue;
+    var kw   = cKw   >= 0 ? extractVal(row[cKw])   : '';
+    var good = cGood >= 0 ? extractVal(row[cGood]) : '';
+    data.push({ name:name, gender:gender, keyword:kw, good:good, row:i });
+  }
+
+  if (data.length === 0) {
+    document.getElementById('infoTxt').textContent =
+      '확정한 참가자가 없습니다. 확정 리스트를 확인해 주세요.';
+    return;
+  }
+
+  participants = data;
+  currentDateLabel = parseDateFromFilename(filename || '');
+  document.getElementById('logoMain').textContent = currentDateLabel || '페어링 스튜디오';
+  document.getElementById('logoSub').textContent  = '페어링 스튜디오';
+
+  var men   = data.filter(function(p){ return p.gender === '남'; }).length;
+  var women = data.filter(function(p){ return p.gender === '여'; }).length;
+  var noKw  = data.filter(function(p){ return !p.keyword; }).length;
+  document.getElementById('infoTxt').textContent =
+    data.length + '명 인식됨 (남 ' + men + '명 / 여 ' + women + '명)';
+  var warns = [];
+  if (noKw > 0) warns.push('키워드 없음 ' + noKw + '명');
+  if (warns.length > 0) {
+    var wEl = document.getElementById('warnTxt');
+    wEl.textContent = '⚠ ' + warns.join(' · ');
+    wEl.style.display = '';
+  }
+  document.getElementById('goBtnWrap').style.display = '';
+}
+
+
+/* ── 현재 탭의 아이템 목록 구성 ── */
+function buildItems(forTab) {
+  var out = [];
+  if (forTab === 'both' || forTab === 'keyword' || forTab === 'good') {
+    participants.forEach(function(p) {
+      var who = p.gender === '남' ? '남자' : '여자';
+      if (forTab === 'both' || forTab === 'keyword') {
+        if (p.keyword) out.push({text:p.keyword, type:'keyword', who:who, badge:'', pick:false});
+      }
+      if (forTab === 'both' || forTab === 'good') {
+        if (p.good) out.push({text:p.good, type:'good', who:who, badge:'', pick:false});
+      }
+    });
+  } else if (forTab === 'pairing') {
+    PAIRING_Q.forEach(function(q) {
+      out.push({text:q[0], type:'pairing', who:'', badge:q[1]===1?'액기스 픽':'', pick:q[1]===1});
+    });
+  } else if (forTab === 'ox') {
+    OX_Q.forEach(function(q) {
+      out.push({text:q[0], type:'ox', who:'', badge:q[1]===1?'양대건 PICK':'', pick:q[1]===1});
+    });
+  }
+  return out;
+}
+
+/* ── 재생 큐 생성 (한 바퀴) ──
+   규칙 1: 모든 유니크 아이템이 한 바퀴 안에 최소 1번 등장 (중복 없이 소진)
+   규칙 2: PICK 항목은 추가로 (PICK_WEIGHT-1)번 더 넣어 빈도를 높임
+   → 셔플 후 순서대로 소진, 바닥나면 새 바퀴 생성                        */
+function buildPlayQueue() {
+  var q = [];
+  for (var i = 0; i < currentItems.length; i++) {
+    q.push(i);
+    if (currentItems[i].pick) {
+      for (var w = 1; w < PICK_WEIGHT; w++) q.push(i);
+    }
+  }
+  /* Fisher-Yates 셔플 */
+  for (var s = q.length - 1; s > 0; s--) {
+    var r = Math.floor(Math.random() * (s + 1));
+    var t = q[s]; q[s] = q[r]; q[r] = t;
+  }
+  /* 연속 중복 방지: 같은 인덱스가 바로 뒤에 오면 뒤로 밀기 */
+  for (var k = 1; k < q.length; k++) {
+    if (q[k] === q[k-1]) {
+      for (var j = k+1; j < q.length; j++) {
+        if (q[j] !== q[k]) { var tmp = q[k]; q[k] = q[j]; q[j] = tmp; break; }
+      }
+    }
+  }
+  return q;
+}
+
+/* ── 자동 재생: 다음 버블 터뜨리기 ── */
+function autoPlayNext() {
+  if (!autoMode) return;
+  /* 큐가 비었으면 새 바퀴 */
+  if (playQueue.length === 0) {
+    playQueue = buildPlayQueue();
+    if (playQueue.length === 0) return;
+  }
+  var itemIdx = playQueue.shift();
+  /* 해당 아이템의 버블 찾기 (idle 상태) */
+  var target = null;
+  for (var i = 0; i < bubbles.length; i++) {
+    if (bubbles[i].itemIdx === itemIdx && bubbles[i].state === 'idle' && bubbles[i].el) {
+      target = bubbles[i]; break;
+    }
+  }
+  /* 버블이 아직 준비 안 됐으면 잠시 후 재시도 */
+  if (!target) {
+    autoTimer = setTimeout(autoPlayNext, 400);
+    return;
+  }
+  popBubbleAuto(target);
+}
+
+/* ── 자동 팝(터뜨리기) ── */
+function popBubbleAuto(b) {
+  b.flipped = true; b.vx = 0; b.vy = 0;
+  b.state = 'pop_shrink';
+  b._autoPopped = true;
+  spawnParticles(b.x, b.y, b.r, 14);
+}
+
+
+/* ── 파티 시작 (업로드 → 스테이지) ── */
+function startParty() {
+  if (!participants.length) return;
+  partyStarted = false;
+  document.getElementById('uploadPanel').style.display = 'none';
+  document.getElementById('stageOuter').style.display = 'block';
+  document.getElementById('endBtn').style.display    = '';
+  document.getElementById('finishBtn').style.display = 'none';
+  document.getElementById('backBtn').style.display   = '';
+  setTab('both');
+  syncSize();
+  resetAll();
+}
+
+/* ── 업로드 화면으로 ── */
+function goBack() {
+  stopAuto();
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  closePopupImmediate();
+  document.getElementById('stageOuter').style.display  = 'none';
+  document.getElementById('uploadPanel').style.display = '';
+  document.getElementById('endBtn').style.display      = 'none';
+  document.getElementById('finishBtn').style.display   = 'none';
+  document.getElementById('backBtn').style.display     = 'none';
+  document.getElementById('endingScreen').classList.remove('show');
+  document.getElementById('logoMain').textContent = '파일을 업로드해 주세요';
+  document.getElementById('logoSub').textContent  = '페어링 스튜디오';
+  document.getElementById('infoTxt').textContent  = '파일을 업로드하면 확정한 참가자가 자동으로 인식됩니다';
+  document.getElementById('warnTxt').style.display   = 'none';
+  document.getElementById('goBtnWrap').style.display = 'none';
+  document.getElementById('bsvg').innerHTML = '';
+  bubbles = []; participants = []; currentItems = []; currentDateLabel = '';
+  revealedCount = 0; partyStarted = false;
+  var inp = document.getElementById('xlFile');
+  if (inp) inp.value = '';
+  setTab('both');
+}
+
+/* ── 자동 재생 중단 ── */
+function stopAuto() {
+  autoMode = false;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  if (popupTimer) { clearInterval(popupTimer); popupTimer = null; }
+}
+
+/* ── 자동 재생 시작 ── */
+function startAuto() {
+  stopAuto();
+  autoMode = true;
+  playQueue = buildPlayQueue();
+  /* 첫 버블은 등장 시간을 고려해 살짝 뒤에 */
+  autoTimer = setTimeout(autoPlayNext, 1500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   파티 시작 버튼 → 엔딩(파티 시작) 문구 → 페어링 질문 자동전환
+═══════════════════════════════════════════════════════ */
+function startEnding() {
+  stopAuto();
+  closePopupImmediate();
+  var active = bubbles.filter(function(b){ return b.scale > 0.05 && !b.flipped; });
+  active.forEach(function(b) {
+    var delay = Math.random() * 1800;
+    setTimeout(function() {
+      if (b.scale > 0.05) {
+        spawnParticles(b.x, b.y, b.r, 8);
+        setTimeout(function() { if (b.scale > 0.05) b.state = 'ending_shrink'; }, 100);
+      }
+    }, delay);
+  });
+  setTimeout(function() {
+    showEndingScreen('start');
+  }, 2300);
+}
+
+/* ── 파티 종료 버튼 → 엔딩(파티 종료) 문구 ── */
+function finishParty() {
+  stopAuto();
+  closePopupImmediate();
+  var active = bubbles.filter(function(b){ return b.scale > 0.05 && !b.flipped; });
+  active.forEach(function(b) {
+    var delay = Math.random() * 1800;
+    setTimeout(function() {
+      if (b.scale > 0.05) {
+        spawnParticles(b.x, b.y, b.r, 8);
+        setTimeout(function() { if (b.scale > 0.05) b.state = 'ending_shrink'; }, 100);
+      }
+    }, delay);
+  });
+  setTimeout(function() {
+    showEndingScreen('finish');
+  }, 2300);
+}
+
+/* ── 엔딩 화면 표시 ── */
+function showEndingScreen(mode) {
+  document.getElementById('endingDate').textContent  = currentDateLabel;
+  document.getElementById('endingStats').textContent = revealedCount + '개의 이야기가 공개됐어요';
+  var titleEl = document.getElementById('endingTitle');
+  var subEl   = document.getElementById('endingSub');
+  var emojiEl = document.getElementById('endingEmoji');
+  var rowEl   = document.getElementById('endingBtnRow');
+  rowEl.innerHTML = '';
+
+  if (mode === 'start') {
+    emojiEl.textContent = '🥂';
+    titleEl.textContent = '페어링 스튜디오 파티 시작!';
+    subEl.textContent   = '지금부터 자유롭게 대화해요!';
+    /* 파티 시작 → 3초 후 자동으로 페어링 질문 탭 전환 */
+    var btnGo = document.createElement('button');
+    btnGo.className = 'ending-back primary';
+    btnGo.textContent = '페어링 질문 시작 →';
+    btnGo.onclick = function() { goToQuestions('pairing'); };
+    rowEl.appendChild(btnGo);
+    document.getElementById('endingScreen').classList.add('show');
+    /* 자동 전환 예약 */
+    autoTimer = setTimeout(function() {
+      if (document.getElementById('endingScreen').classList.contains('show')) {
+        goToQuestions('pairing');
+      }
+    }, 3500);
+  } else {
+    emojiEl.textContent = '🍷';
+    titleEl.textContent = '페어링 스튜디오 파티 종료!';
+    subEl.textContent   = '지금부터 자유롭게 2차 시작!';
+    var btnHome = document.createElement('button');
+    btnHome.className = 'ending-back';
+    btnHome.textContent = '↺ 처음으로';
+    btnHome.onclick = function() { goBack(); };
+    rowEl.appendChild(btnHome);
+    document.getElementById('endingScreen').classList.add('show');
+  }
+}
+
+/* ── 엔딩 → 질문 탭으로 진입 ── */
+function goToQuestions(which) {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  document.getElementById('endingScreen').classList.remove('show');
+  partyStarted = true;
+  /* 질문 모드: 파티 시작 버튼 숨기고 파티 종료 버튼 표시 */
+  document.getElementById('endBtn').style.display    = 'none';
+  document.getElementById('finishBtn').style.display = '';
+  setTab(which);
+  resetAll();
+}
+
+
+/* ── 팝업 ── */
+function openPopup(b) {
+  activePopupBubble = b; popupLocked = true;
+  var item = currentItems[b.itemIdx] || {};
+  var isQuestion = (b.type === 'pairing' || b.type === 'ox');
+
+  /* 타입 라벨 + 도트 색 */
+  var dotColor, typeLabel;
+  if (b.type === 'keyword')      { dotColor = '#90b8d8'; typeLabel = '키워드'; }
+  else if (b.type === 'good')    { dotColor = '#88c888'; typeLabel = '최근 좋은 일'; }
+  else if (b.type === 'pairing') { dotColor = '#c9a0dc'; typeLabel = '페어링 질문'; }
+  else                            { dotColor = '#e0a860'; typeLabel = 'OX 질문'; }
+  document.getElementById('popupTypeDot').style.background = dotColor;
+  document.getElementById('popupTypeLabel').textContent = typeLabel;
+
+  /* 배지 (액기스 픽 / 양대건 PICK) */
+  var badgeEl = document.getElementById('popupBadge');
+  if (item.badge) {
+    badgeEl.textContent = item.badge;
+    badgeEl.style.display = '';
+  } else {
+    badgeEl.style.display = 'none';
+  }
+
+  /* who 라인 */
+  var whoEl = document.getElementById('popupWho');
+  if (isQuestion) {
+    whoEl.style.display = 'none';
+    document.getElementById('popupText').textContent = b.text;
+  } else {
+    whoEl.style.display = '';
+    whoEl.textContent = b.gender === '남' ? '남자' : '여자';
+    document.getElementById('popupText').textContent = b.text;
+  }
+
+  /* 진행 상황 표시 */
+  var progEl = document.getElementById('popupProgress');
+  if (autoMode) {
+    var total = currentItems.length;
+    var done  = total - countRemainingUnique();
+    progEl.textContent = '자동 진행 중';
+  } else {
+    progEl.textContent = '';
+  }
+
+  var box = document.getElementById('popupBox');
+  var dim = document.getElementById('popupDim');
+  box.classList.remove('hide'); void box.offsetWidth;
+  box.classList.add('show'); dim.classList.add('show');
+  document.getElementById('bottomHint').classList.add('hidden');
+
+  /* 자동 모드면 10초 타이머 후 자동 닫기 */
+  var timerWrap = document.getElementById('popupTimer');
+  if (autoMode) {
+    timerWrap.style.display = '';
+    startPopupTimer();
+  } else {
+    timerWrap.style.display = 'none';
+  }
+
+  setTimeout(function() { popupLocked = false; }, 360);
+}
+
+/* 남은 유니크 아이템 수 (진행률 계산용) */
+function countRemainingUnique() {
+  var seen = {};
+  playQueue.forEach(function(ix){ seen[ix] = true; });
+  return Object.keys(seen).length;
+}
+
+/* ── 팝업 타이머 (10초, 자동 모드) ── */
+function startPopupTimer() {
+  if (popupTimer) { clearInterval(popupTimer); popupTimer = null; }
+  var CIRC = 50.27;
+  var startTs = Date.now();
+  var fg = document.getElementById('timerFg');
+  var numEl = document.getElementById('timerNum');
+  fg.setAttribute('stroke-dashoffset', '0');
+  numEl.textContent = Math.ceil(POPUP_DURATION / 1000);
+  popupTimer = setInterval(function() {
+    var elapsed = Date.now() - startTs;
+    var ratio = Math.min(1, elapsed / POPUP_DURATION);
+    fg.setAttribute('stroke-dashoffset', (CIRC * ratio).toFixed(2));
+    numEl.textContent = Math.max(0, Math.ceil((POPUP_DURATION - elapsed) / 1000));
+    if (elapsed >= POPUP_DURATION) {
+      clearInterval(popupTimer); popupTimer = null;
+      closePopup();
+    }
+  }, 100);
+}
+
+/* ── 팝업 닫기: 자동 모드면 닫힌 뒤 자동으로 다음 버블을 예약 ──
+   (타이머 만료로 닫히든, 사용자가 직접 클릭해서 닫든 동일하게 이어짐) */
+function closePopup() {
+  if (popupLocked || !activePopupBubble) return;
+  popupLocked = true;
+  if (popupTimer) { clearInterval(popupTimer); popupTimer = null; }
+  var box = document.getElementById('popupBox');
+  var dim = document.getElementById('popupDim');
+  box.classList.remove('show'); box.classList.add('hide'); dim.classList.remove('show');
+  document.getElementById('bottomHint').classList.remove('hidden');
+  var b = activePopupBubble; activePopupBubble = null;
+  spawnParticles(b.x, b.y, b.r, 12);
+  setTimeout(function() {
+    box.classList.remove('hide');
+    restoreBubble(b); popupLocked = false;
+    if (autoMode) { autoTimer = setTimeout(autoPlayNext, 700); }
+  }, 230);
+}
+
+function closePopupImmediate() {
+  if (popupTimer) { clearInterval(popupTimer); popupTimer = null; }
+  var box = document.getElementById('popupBox');
+  var dim = document.getElementById('popupDim');
+  box.classList.remove('show', 'hide'); dim.classList.remove('show');
+  document.getElementById('bottomHint').classList.remove('hidden');
+  if (activePopupBubble) { restoreBubble(activePopupBubble); activePopupBubble = null; }
+  popupLocked = false;
+}
+
+function restoreBubble(b) {
+  b.flipped = false;
+  var origFO = ['0.06','1','1','1','0.55','0.18','0.82'];
+  var origSO = ['0','0.45','0','0','0','0','0'];
+  b.frontEls.forEach(function(e, idx) {
+    e.setAttribute('fill-opacity',   origFO[idx] || '1');
+    e.setAttribute('stroke-opacity', origSO[idx] || '0');
+  });
+  b.textG.style.display = 'block'; b.backG.style.display = 'none';
+  var ang = Math.random() * Math.PI * 2;
+  b.vx = Math.cos(ang) * 0.38; b.vy = Math.sin(ang) * 0.38;
+  b.scale = 0; b.springVel = 0; b.state = 'restore';
+  b._autoPopped = false;
+}
+
+/* ── 파티클 ── */
+function spawnParticles(cx, cy, r, count) {
+  var svg = document.getElementById('bsvg');
+  for (var p = 0; p < count; p++) {
+    (function(pi) {
+      var ang = (pi / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      var spd = r * (0.04 + Math.random() * 0.07);
+      var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy);
+      c.setAttribute('r', 2 + Math.random() * 3);
+      var cols = ['#a8ccee','#c0d8f4','#d4e8f8','#b0ccec','#cce0f8','#e0eef8'];
+      c.setAttribute('fill', cols[pi % cols.length]);
+      c.setAttribute('fill-opacity', '0.85');
+      svg.appendChild(c);
+      var vx = Math.cos(ang) * spd, vy = Math.sin(ang) * spd, alpha = 0.85;
+      function tick() {
+        var x = +c.getAttribute('cx'), y = +c.getAttribute('cy');
+        vx *= 0.91; vy = vy * 0.91 + 0.22; alpha -= 0.042;
+        c.setAttribute('cx', x + vx); c.setAttribute('cy', y + vy);
+        c.setAttribute('fill-opacity', Math.max(0, alpha).toFixed(3));
+        if (alpha > 0) requestAnimationFrame(tick); else c.remove();
+      }
+      requestAnimationFrame(tick);
+    })(p);
+  }
+}
+
+
+/* ── 캔버스 ── */
+function syncSize() {
+  var el = document.getElementById('bubbleCanvas');
+  W = el.clientWidth || 800; H = el.clientHeight || 560;
+  var svg = document.getElementById('bsvg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.setAttribute('width',   W);
+  svg.setAttribute('height',  H);
+}
+function calcRadius(total) {
+  if (total <= 10) return {min:66, max:94};
+  if (total <= 20) return {min:54, max:78};
+  if (total <= 30) return {min:43, max:64};
+  if (total <= 50) return {min:34, max:53};
+  return {min:28, max:44};
+}
+function wrapText(txt, r) {
+  var baseFz = Math.min(r * 0.30, 19);
+  var fz;
+  if      (txt.length > 30) fz = Math.max(baseFz * 0.58, 10);
+  else if (txt.length > 20) fz = Math.max(baseFz * 0.70, 11.5);
+  else if (txt.length > 14) fz = Math.max(baseFz * 0.82, 13);
+  else if (txt.length > 9)  fz = Math.max(baseFz * 0.93, 14);
+  else                       fz = baseFz;
+  var mc = Math.floor(r * 1.68 / (fz * 0.56));
+  var words = txt.split(/\s+/), lines = [], line = '';
+  words.forEach(function(w) {
+    var t = (line ? line + ' ' : '') + w;
+    if (t.length > mc && line) { lines.push(line); line = w; } else line = t;
+  });
+  if (line) lines.push(line);
+  return {lines: lines.slice(0, 4), fz: fz};
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUBBLE
+═══════════════════════════════════════════════════════ */
+function Bubble(id, itemIdx, text, gender, type, rMin, rMax, appearDelay) {
+  this.id = id; this.itemIdx = itemIdx; this.text = text;
+  this.gender = gender; this.type = type;
+  this.r = rMin + Math.random() * (rMax - rMin);
+  this.x = W / 2; this.y = H / 2;
+  var ang = Math.random() * Math.PI * 2;
+  var spd = 0.22 + Math.random() * 0.28;
+  this.vx = Math.cos(ang) * spd; this.vy = Math.sin(ang) * spd;
+  this.mass = this.r * this.r;
+  this.flipped = false; this._revealed = false; this._autoPopped = false;
+  this.uid = 'b' + id + '_' + (Date.now() % 99999) + '_' + Math.floor(Math.random() * 9999);
+  this.el = null; this.frontEls = []; this.backG = null; this.textG = null;
+  this.scale = 0; this.springVel = 0;
+  this.state = 'waiting'; this._lastPE = null;
+  this.appearDelay = appearDelay;
+  this._appearTs = null;
+}
+
+/* ── 단일 메인 루프 ── */
+function mainLoop(ts) {
+  var i, j, a, b;
+  for (i = 0; i < bubbles.length; i++) {
+    b = bubbles[i];
+    if (b._appearTs === null) b._appearTs = ts + b.appearDelay;
+    if (ts >= b._appearTs && b.state === 'waiting' && b.el) b.state = 'appearing';
+    if (!b.el) continue;
+
+    if (b.state === 'appearing' || b.state === 'restore') {
+      var f = (1 - b.scale) * 0.07 - b.springVel * 0.75;
+      b.springVel += f; b.scale += b.springVel;
+      if (b.scale > 1.04) { b.scale = 1.04; b.springVel *= 0.3; }
+      if (b.scale < 0) b.scale = 0;
+      if (b.scale >= 0.998) { b.scale = 1; b.springVel = 0; b.state = 'idle'; }
+    } else if (b.state === 'pop_shrink' || b.state === 'ending_shrink') {
+      b.scale -= (b.state === 'pop_shrink' ? 0.13 : 0.07);
+      if (b.scale <= 0.01) {
+        b.scale = 0; b.springVel = 0;
+        if (b.state === 'pop_shrink') {
+          b.textG.style.display = 'none';
+          b.frontEls.forEach(function(e) {
+            e.setAttribute('fill-opacity', '0'); e.setAttribute('stroke-opacity', '0');
+          });
+          b.backG.style.display = 'block';
+          b.state = 'popped'; b.flipped = true;
+          if (!b._revealed) { b._revealed = true; revealedCount++; }
+          openPopup(b);
+        } else {
+          b.state = 'gone'; b.flipped = true;
+        }
+      }
+    }
+
+    if (!b.flipped && b.state !== 'waiting' && b.state !== 'popped' && b.state !== 'gone') {
+      b.vx += (Math.random() - 0.5) * 0.004;
+      b.vy += (Math.random() - 0.5) * 0.004;
+      var sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      if (sp > 0.72) { b.vx = b.vx / sp * 0.72; b.vy = b.vy / sp * 0.72; }
+      if (sp < 0.10) {
+        var ra = Math.random() * Math.PI * 2;
+        b.vx = Math.cos(ra) * 0.18; b.vy = Math.sin(ra) * 0.18;
+      }
+      b.x += b.vx; b.y += b.vy;
+      if (b.x >  W + WRAP_PAD) b.x = -WRAP_PAD;
+      if (b.x < -WRAP_PAD)     b.x =  W + WRAP_PAD;
+      if (b.y >  H + WRAP_PAD) b.y = -WRAP_PAD;
+      if (b.y < -WRAP_PAD)     b.y =  H + WRAP_PAD;
+    }
+
+    var sc = Math.max(0, Math.min(1.05, b.scale));
+    b.el.setAttribute('transform',
+      'translate(' + b.x.toFixed(1) + ',' + b.y.toFixed(1) +
+      ') scale(' + (sc < 0.005 ? 0 : sc.toFixed(3)) + ')');
+    var shouldAuto = (b.state === 'idle' || b.state === 'popped');
+    if (b._lastPE !== shouldAuto) {
+      b.el.style.pointerEvents = shouldAuto ? 'auto' : 'none';
+      b._lastPE = shouldAuto;
+    }
+  }
+
+  /* 충돌 */
+  for (i = 0; i < bubbles.length; i++) {
+    a = bubbles[i];
+    if (!a.el || a.state !== 'idle') continue;
+    if (a.x < -WRAP_PAD || a.x > W+WRAP_PAD || a.y < -WRAP_PAD || a.y > H+WRAP_PAD) continue;
+    for (j = i + 1; j < bubbles.length; j++) {
+      b = bubbles[j];
+      if (!b.el || b.state !== 'idle') continue;
+      var dx = b.x-a.x, dy = b.y-a.y;
+      var dist = Math.sqrt(dx*dx + dy*dy), minD = a.r + b.r;
+      if (dist < minD && dist > 0.01) {
+        var ov = (minD-dist)/2, nx = dx/dist, ny = dy/dist;
+        if (a.flipped && b.flipped) { continue; }
+        else if (a.flipped) { b.x+=nx*ov*2; b.y+=ny*ov*2; b.vx+=nx*0.15; b.vy+=ny*0.15; }
+        else if (b.flipped) { a.x-=nx*ov*2; a.y-=ny*ov*2; a.vx-=nx*0.15; a.vy-=ny*0.15; }
+        else {
+          a.x-=nx*ov; a.y-=ny*ov; b.x+=nx*ov; b.y+=ny*ov;
+          var dvx=a.vx-b.vx, dvy=a.vy-b.vy, dot2=dvx*nx+dvy*ny;
+          if (dot2 > 0) {
+            var ma=a.mass, mb=b.mass, tot=ma+mb, imp=2*dot2/tot, damp=0.93;
+            a.vx=(a.vx-imp*mb*nx)*damp; a.vy=(a.vy-imp*mb*ny)*damp;
+            b.vx=(b.vx+imp*ma*nx)*damp; b.vy=(b.vy+imp*ma*ny)*damp;
+          }
+        }
+      }
+    }
+  }
+  animId = requestAnimationFrame(mainLoop);
+}
+
+
+/* ── SVG 헬퍼 ── */
+function nsEl(t) { return document.createElementNS('http://www.w3.org/2000/svg', t); }
+function mkEl(tag, attrs) {
+  var e = nsEl(tag);
+  Object.keys(attrs).forEach(function(k) { e.setAttribute(k, attrs[k]); });
+  return e;
+}
+function addGrad(defs, id, type, obj, stops) {
+  var g = nsEl(type); g.id = id;
+  Object.keys(obj).forEach(function(k) { g.setAttribute(k, obj[k]); });
+  g.innerHTML = stops; defs.appendChild(g);
+}
+
+/* 타입별 도트 색 */
+function dotColorFor(type) {
+  if (type === 'keyword') return '#90b8d8';
+  if (type === 'good')    return '#88c888';
+  if (type === 'pairing') return '#c9a0dc';
+  return '#e0a860';
+}
+
+/* ── 버블 빌드 ── */
+Bubble.prototype.build = function(svg) {
+  var uid = this.uid, r = this.r, self = this;
+  var defs = svg.querySelector('defs');
+  if (!defs) { defs = nsEl('defs'); svg.insertBefore(defs, svg.firstChild); }
+
+  addGrad(defs,'lg'+uid,'linearGradient',{x1:'12%',y1:'6%',x2:'88%',y2:'94%'},
+    '<stop offset="0%" stop-color="#d8eeff" stop-opacity="0.50"/>'+
+    '<stop offset="28%" stop-color="#eee4ff" stop-opacity="0.18"/>'+
+    '<stop offset="54%" stop-color="#e0f4ff" stop-opacity="0.13"/>'+
+    '<stop offset="78%" stop-color="#fff0e0" stop-opacity="0.20"/>'+
+    '<stop offset="100%" stop-color="#ddd4f4" stop-opacity="0.36"/>');
+  addGrad(defs,'rg'+uid,'radialGradient',{cx:'31%',cy:'24%',r:'38%'},
+    '<stop offset="0%" stop-color="#fff" stop-opacity="0.96"/>'+
+    '<stop offset="44%" stop-color="#e4f2ff" stop-opacity="0.38"/>'+
+    '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>');
+  addGrad(defs,'sg'+uid,'radialGradient',{cx:'50%',cy:'50%',r:'50%'},
+    '<stop offset="54%" stop-color="#a0c0e0" stop-opacity="0"/>'+
+    '<stop offset="87%" stop-color="#80a8cc" stop-opacity="0.20"/>'+
+    '<stop offset="100%" stop-color="#60a0cc" stop-opacity="0.40"/>');
+  addGrad(defs,'bgl'+uid,'linearGradient',{x1:'12%',y1:'6%',x2:'88%',y2:'94%'},
+    '<stop offset="0%" stop-color="#c0dcff" stop-opacity="0.65"/>'+
+    '<stop offset="30%" stop-color="#aac8f8" stop-opacity="0.38"/>'+
+    '<stop offset="58%" stop-color="#b8d8ff" stop-opacity="0.32"/>'+
+    '<stop offset="82%" stop-color="#aabcf0" stop-opacity="0.42"/>'+
+    '<stop offset="100%" stop-color="#98b0ec" stop-opacity="0.56"/>');
+  addGrad(defs,'bgr'+uid,'radialGradient',{cx:'31%',cy:'24%',r:'38%'},
+    '<stop offset="0%" stop-color="#fff" stop-opacity="0.90"/>'+
+    '<stop offset="48%" stop-color="#d0e4ff" stop-opacity="0.30"/>'+
+    '<stop offset="100%" stop-color="#fff" stop-opacity="0"/>');
+  addGrad(defs,'bgs'+uid,'radialGradient',{cx:'50%',cy:'50%',r:'50%'},
+    '<stop offset="54%" stop-color="#80a8d8" stop-opacity="0"/>'+
+    '<stop offset="87%" stop-color="#6090c8" stop-opacity="0.26"/>'+
+    '<stop offset="100%" stop-color="#4078b8" stop-opacity="0.46"/>');
+
+  var cp = nsEl('clipPath'); cp.id = 'cp'+uid;
+  cp.appendChild(mkEl('circle', {cx:'0',cy:'0',r:r-1})); defs.appendChild(cp);
+
+  var g = nsEl('g'); g.style.cursor = 'pointer'; this.el = g;
+
+  var sh   = mkEl('ellipse',{cx:'1',cy:r*0.14,rx:r*0.86,ry:r*0.16,fill:'#88aabb','fill-opacity':'0.06'});
+  var base = mkEl('circle', {cx:'0',cy:'0',r:r,fill:'url(#lg'+uid+')',stroke:'#90b8d8','stroke-width':'0.9','stroke-opacity':'0.45'});
+  var rim  = mkEl('circle', {cx:'0',cy:'0',r:r,fill:'url(#sg'+uid+')'});
+  var hl   = mkEl('ellipse',{cx:-r*0.20,cy:-r*0.27,rx:r*0.25,ry:r*0.12,fill:'url(#rg'+uid+')',transform:'rotate(-36,'+(-r*0.20)+','+(-r*0.27)+')'});
+  var gl   = mkEl('circle', {cx:r*0.27,cy:r*0.29,r:r*0.065,fill:'#fff','fill-opacity':'0.55'});
+  var iri  = mkEl('ellipse',{cx:'0',cy:r*0.58,rx:r*0.36,ry:r*0.09,fill:'#b8ddff','fill-opacity':'0.18'});
+  var dot  = mkEl('circle', {cx:r*0.62,cy:-r*0.62,r:Math.max(r*0.09,5.5),fill:dotColorFor(this.type),'fill-opacity':'0.82'});
+
+  var wr = wrapText(this.text, r);
+  var lh = wr.fz*1.44, th = (wr.lines.length-1)*lh;
+  var tg = nsEl('g'); tg.setAttribute('clip-path', 'url(#cp'+uid+')');
+  wr.lines.forEach(function(l, li) {
+    var t = nsEl('text');
+    t.setAttribute('x','0'); t.setAttribute('y', -th/2+li*lh+wr.fz*0.38);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family',"Pretendard,'Apple SD Gothic Neo',sans-serif");
+    t.setAttribute('font-size', wr.fz); t.setAttribute('font-weight','500');
+    t.setAttribute('fill','#1a2535'); t.setAttribute('fill-opacity','0.80');
+    t.textContent = l; tg.appendChild(t);
+  });
+  this.textG = tg;
+
+  /* 뒷면 */
+  var bg   = nsEl('g'); bg.style.display = 'none';
+  var bc   = mkEl('circle', {cx:'0',cy:'0',r:r,fill:'url(#bgl'+uid+')',stroke:'#88b0d8','stroke-width':'0.9','stroke-opacity':'0.55'});
+  var brim = mkEl('circle', {cx:'0',cy:'0',r:r,fill:'url(#bgs'+uid+')'});
+  var bhl  = mkEl('ellipse',{cx:-r*0.20,cy:-r*0.27,rx:r*0.25,ry:r*0.12,fill:'url(#bgr'+uid+')',transform:'rotate(-36,'+(-r*0.20)+','+(-r*0.27)+')'});
+  var bgl2 = mkEl('circle', {cx:r*0.27,cy:r*0.29,r:r*0.065,fill:'#fff','fill-opacity':'0.44'});
+  var biri = mkEl('ellipse',{cx:'0',cy:r*0.58,rx:r*0.36,ry:r*0.09,fill:'#b8d4f4','fill-opacity':'0.24'});
+  var isQ  = (this.type === 'pairing' || this.type === 'ox');
+  var fs   = Math.min(r*0.32, 18);
+  var bn = nsEl('text');
+  bn.setAttribute('x','0'); bn.setAttribute('y','0');
+  bn.setAttribute('text-anchor','middle'); bn.setAttribute('dominant-baseline','middle');
+  bn.setAttribute('font-family',"Pretendard,sans-serif");
+  bn.setAttribute('font-size',fs); bn.setAttribute('font-weight','700'); bn.setAttribute('fill','#1a2c4a');
+  if (isQ) {
+    bn.textContent = this.type === 'pairing' ? '페어링 질문' : 'OX 질문';
+  } else {
+    bn.textContent = this.gender==='남' ? '남자' : '여자';
+  }
+  bg.appendChild(bc); bg.appendChild(brim); bg.appendChild(bhl);
+  bg.appendChild(bgl2); bg.appendChild(biri); bg.appendChild(bn);
+  this.backG = bg;
+
+  this.frontEls = [sh, base, rim, hl, gl, iri, dot];
+  g.appendChild(sh); g.appendChild(base); g.appendChild(rim); g.appendChild(hl);
+  g.appendChild(gl); g.appendChild(iri); g.appendChild(dot); g.appendChild(tg); g.appendChild(bg);
+  g.addEventListener('click', function() { self.onClick(); });
+  g.setAttribute('transform', 'translate('+this.x.toFixed(1)+','+this.y.toFixed(1)+') scale(0)');
+  svg.appendChild(g);
+};
+
+/* 클릭: 수동으로도 터뜨릴 수 있음 (자동 모드에서도 허용) */
+Bubble.prototype.onClick = function() {
+  if (activePopupBubble && activePopupBubble !== this) closePopupImmediate();
+  if (this.state === 'popped') { closePopup(); return; }
+  if (popupLocked || this.state !== 'idle') return;
+  /* 수동 클릭 시: 자동 타이머 취소하고 이 버블을 바로 표시.
+     이번 바퀴 큐에 남아있던 같은 아이템은 제거해 중복 재생을 막는다. */
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  if (autoMode) {
+    var myIdx = this.itemIdx;
+    playQueue = playQueue.filter(function(ix) { return ix !== myIdx; });
+  }
+  this.flipped = true; this.vx = 0; this.vy = 0;
+  this.state = 'pop_shrink';
+  spawnParticles(this.x, this.y, this.r, 14);
+};
+
+/* ── 탭 전환 ── */
+function setTab(t) {
+  tab = t;
+  var pills = document.querySelectorAll('.tab-pill');
+  for (var i = 0; i < pills.length; i++) {
+    if (pills[i].getAttribute('data-tab') === t) pills[i].classList.add('on');
+    else pills[i].classList.remove('on');
+  }
+}
+function switchTab(t, btn) {
+  setTab(t);
+  closePopupImmediate();
+  resetAll();
+}
+
+/* ── 리셋 (버블 재생성 + 자동재생 시작) ── */
+function resetAll() {
+  stopAuto();
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  closePopupImmediate();
+  document.getElementById('endingScreen').classList.remove('show');
+  revealedCount = 0;
+  var svg = document.getElementById('bsvg'); svg.innerHTML = '';
+  bubbles = []; syncSize();
+
+  currentItems = buildItems(tab);
+  if (currentItems.length === 0) currentItems = buildDemoItems();
+
+  var total = currentItems.length;
+  var rng = calcRadius(total);
+
+  /* 격자 배치 */
+  var PAD   = WRAP_PAD * 1.1;
+  var areaW = W + PAD*2, areaH = H + PAD*2;
+  var rAvg  = (rng.min + rng.max) / 2;
+  var cell  = rAvg * 3.0;
+  var cols  = Math.max(1, Math.floor(areaW / cell));
+  var rowsN = Math.max(1, Math.floor(areaH / cell));
+  var cellIdx = [];
+  for (var ci = 0; ci < cols*rowsN; ci++) cellIdx.push(ci);
+  for (var si = cellIdx.length-1; si > 0; si--) {
+    var ri = Math.floor(Math.random()*(si+1));
+    var tmp = cellIdx[si]; cellIdx[si] = cellIdx[ri]; cellIdx[ri] = tmp;
+  }
+
+  var GROUP=10, GDELAY=280, WDELAY=38;
+  currentItems.forEach(function(item, idx) {
+    var g = Math.floor(idx/GROUP), w = idx%GROUP;
+    var gender = item.who === '남자' ? '남' : (item.who === '여자' ? '여' : '');
+    bubbles.push(new Bubble(idx, idx, item.text, gender, item.type,
+      rng.min, rng.max, g*GDELAY + w*WDELAY));
+  });
+
+  /* 격자 위치 할당 */
+  bubbles.forEach(function(b, i) {
+    var cii = cellIdx[i % cellIdx.length];
+    var col = cii % cols, row2 = Math.floor(cii / cols);
+    b.x = -PAD + col*cell + cell*0.5 + (Math.random()-0.5)*cell*0.55;
+    b.y = -PAD + row2*cell + cell*0.5 + (Math.random()-0.5)*cell*0.55;
+    var outside = b.x<-10 || b.x>W+10 || b.y<-10 || b.y>H+10;
+    if (outside) {
+      var toX=W*0.3+Math.random()*W*0.4, toY=H*0.3+Math.random()*H*0.4;
+      var dx=toX-b.x, dy=toY-b.y, dist=Math.sqrt(dx*dx+dy*dy);
+      var spd=0.25+Math.random()*0.25;
+      b.vx=dx/dist*spd; b.vy=dy/dist*spd;
+    }
+  });
+
+  /* 순차 build */
+  var bsvgEl = document.getElementById('bsvg');
+  bubbles.forEach(function(b, i) {
+    var g=Math.floor(i/GROUP), w=i%GROUP;
+    var delay = g*GDELAY + w*WDELAY + 16;
+    setTimeout(function() {
+      if (bubbles.indexOf(b) >= 0) b.build(bsvgEl);
+    }, delay);
+  });
+
+  animId = requestAnimationFrame(mainLoop);
+
+  /* 자동 재생 시작 (참가자 탭/질문 탭 모두 자동) */
+  startAuto();
+
+  /* 하단 힌트 */
+  document.getElementById('bottomHint').textContent =
+    '버블이 자동으로 톡— 하고 터집니다  ·  직접 눌러서 볼 수도 있어요';
+  document.getElementById('bottomHint').classList.remove('hidden');
+}
+
+/* 데모 아이템 (파일 없을 때) */
+function buildDemoItems() {
+  return [
+    {text:'새벽 독서 / 에스프레소', type:'keyword', who:'여자', badge:'', pick:false},
+    {text:'오랜 친구를 우연히 만났어요', type:'good', who:'여자', badge:'', pick:false},
+    {text:'주말 등산러', type:'keyword', who:'남자', badge:'', pick:false},
+    {text:'드디어 책 한 권 완독', type:'good', who:'남자', badge:'', pick:false},
+    {text:'영화 소믈리에', type:'keyword', who:'여자', badge:'', pick:false},
+    {text:'원하던 프로젝트 합류', type:'good', who:'남자', badge:'', pick:false}
+  ];
+}
+
+window.addEventListener('resize', function(){ if(animId){syncSize();resetAll();} });
+setTab('both');
+syncSize();
+resetAll();
+</script>
+</body>
+</html>
